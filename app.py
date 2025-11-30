@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import cross_val_score, cross_validate, StratifiedKFold, KFold
+import warnings
+warnings.filterwarnings('ignore')
 from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -17,8 +18,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.feature_selection import mutual_info_classif, mutual_info_regression
 from scipy.spatial.distance import pdist, squareform
-import warnings
-warnings.filterwarnings('ignore')
 
 st.set_page_config(page_title="Data-Science Analyzer", layout="wide")
 
@@ -106,6 +105,9 @@ def compute_mutual_info(X, y, feature_cols, task_type):
 
 def train_models(X, y, task_type):
     """Train multiple models with cross-validation."""
+    import warnings
+    warnings.filterwarnings('ignore')
+    
     if task_type == 'classification':
         cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
         models = {
@@ -117,7 +119,7 @@ def train_models(X, y, task_type):
             'K-Nearest Neighbors': KNeighborsClassifier(n_neighbors=5),
             'Ridge Classifier': LogisticRegression(penalty='l2', solver='lbfgs', max_iter=1000, random_state=42),
         }
-        scoring = {'accuracy': 'accuracy', 'precision': 'precision_weighted', 'recall': 'recall_weighted', 'f1': 'f1_weighted', 'roc_auc': 'roc_auc_ovr_weighted'}
+        scoring = {'accuracy': 'accuracy', 'precision': 'precision_weighted', 'recall': 'recall_weighted', 'f1': 'f1_weighted'}
     else:
         cv = KFold(n_splits=5, shuffle=True, random_state=42)
         models = {
@@ -134,8 +136,12 @@ def train_models(X, y, task_type):
     
     results = {}
     for name, model in models.items():
-        cv_results = cross_validate(model, X, y, cv=cv, scoring=scoring, return_train_score=True, n_jobs=-1)
-        results[name] = cv_results
+        try:
+            cv_results = cross_validate(model, X, y, cv=cv, scoring=scoring, return_train_score=True, n_jobs=-1)
+            results[name] = cv_results
+        except Exception as e:
+            st.warning(f"⚠️ {name} failed: {str(e)[:50]}")
+            continue
     
     return results, models
 
