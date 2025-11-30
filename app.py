@@ -15,7 +15,7 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import shap
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.stats import mutual_info_classif, mutual_info_regression
+from sklearn.feature_selection import mutual_info_classif, mutual_info_regression
 from scipy.spatial.distance import pdist, squareform
 import warnings
 warnings.filterwarnings('ignore')
